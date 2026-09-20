@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Heart, Sparkles, RotateCcw, Edit3, Volume2, VolumeX, Check } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Heart, Sparkles, RotateCcw, Volume2, VolumeX, Check } from 'lucide-react';
 
 interface RomanticMessageCardProps {
   onShowerAgain: () => void;
@@ -15,10 +15,6 @@ export const RomanticMessageCard: React.FC<RomanticMessageCardProps> = ({
   isMuted,
   onToggleMute,
 }) => {
-  const [customNote, setCustomNote] = useState<string>(
-    "From the moment you stepped into my life, every heartbeat feels like a celebration. May this endless shower of hearts remind you how deeply and endlessly you are cherished, today and always. ❤️"
-  );
-  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
 
   const handleCopyLink = () => {
@@ -93,46 +89,16 @@ export const RomanticMessageCard: React.FC<RomanticMessageCardProps> = ({
         </div>
 
         {/* Romantic Letter Body */}
-        <AnimatePresence mode="wait">
-          {isEditing ? (
-            <motion.div
-              key="editing"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-6"
-            >
-              <textarea
-                value={customNote}
-                onChange={(e) => setCustomNote(e.target.value)}
-                maxLength={400}
-                rows={4}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-rose-950/60 border border-rose-400/40 text-rose-100 text-sm focus:outline-none focus:border-rose-400 font-light resize-none placeholder-rose-400/40"
-                placeholder="Write your personalized love note..."
-              />
-              <div className="flex justify-end gap-2 mt-2">
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-medium transition-colors"
-                >
-                  Save Note
-                </button>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="display"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7, duration: 0.8 }}
-              className="relative text-center mb-7 px-2"
-            >
-              <p className="font-serif-romantic italic text-rose-100/90 text-base sm:text-lg leading-relaxed font-light">
-                &ldquo;{customNote}&rdquo;
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7, duration: 0.8 }}
+          className="relative text-center mb-7 px-2"
+        >
+          <p className="font-serif-romantic italic text-rose-100/90 text-base sm:text-lg leading-relaxed font-light">
+            &ldquo;From the moment you stepped into my life, every heartbeat feels like a celebration. May this endless shower of hearts remind you how deeply and endlessly you are cherished, today and always. ❤️&rdquo;
+          </p>
+        </motion.div>
 
         {/* Action Controls */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
@@ -146,23 +112,12 @@ export const RomanticMessageCard: React.FC<RomanticMessageCardProps> = ({
             <span>Shower More Hearts</span>
           </button>
 
-          {/* Edit Note Toggle */}
-          <button
-            id="edit-note-btn"
-            onClick={() => setIsEditing(!isEditing)}
-            title="Personalize this message"
-            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-3 rounded-2xl border border-rose-400/30 bg-rose-950/40 hover:bg-rose-900/50 text-rose-200 text-xs font-medium active:scale-95 transition-all cursor-pointer"
-          >
-            <Edit3 className="w-3.5 h-3.5" />
-            <span>{isEditing ? 'Close' : 'Personalize'}</span>
-          </button>
-
           {/* Replay Tap Trigger */}
           <button
             id="replay-experience-btn"
             onClick={onReset}
             title="Replay from the beginning"
-            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-3 rounded-2xl border border-rose-400/30 bg-rose-950/40 hover:bg-rose-900/50 text-rose-200 text-xs font-medium active:scale-95 transition-all cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-5 py-3 rounded-2xl border border-rose-400/30 bg-rose-950/40 hover:bg-rose-900/50 text-rose-200 text-xs font-medium active:scale-95 transition-all cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Replay</span>
