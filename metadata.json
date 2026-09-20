@@ -1,0 +1,6 @@
+{
+  "name": "Romantic Heart Shower",
+  "description": "A romantic single-tap interactive page with a grand heart shower and a heartfelt message for Vaishu.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
