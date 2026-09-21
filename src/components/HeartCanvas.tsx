@@ -1,14 +1,25 @@
 import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
-import { HeartParticle, AmbientParticle } from '../types';
+import { HeartParticle, AmbientParticle, FloatingWhisper } from '../types';
 
 export interface HeartCanvasHandle {
   burstFrom: (x: number, y: number, count?: number) => void;
   showerFromEverywhere: (count?: number) => void;
+  spawnWhisper: (text?: string, x?: number, y?: number) => void;
+  triggerHeartbeatPulse: (x?: number, y?: number) => void;
   clear: () => void;
 }
 
 interface HeartCanvasProps {
   interactive?: boolean;
+}
+
+interface PulseWave {
+  x: number;
+  y: number;
+  radius: number;
+  maxRadius: number;
+  opacity: number;
+  color: string;
 }
 
 const ROMANTIC_PALETTE = [
@@ -24,6 +35,17 @@ const ROMANTIC_PALETTE = [
   '#ff0054', // Passion pink
 ];
 
+const ROMANTIC_WHISPERS = [
+  'Come soon ✨',
+  'Counting down every second...',
+  'The world is waiting for you 🌸',
+  'Hurry back to me...',
+  'Missing your smile...',
+  'Wishing you were here right now 💫',
+  'Every moment feels too long without you...',
+  'Come back soon, Vaishu 💖',
+];
+
 // Helper to draw a crisp bezier heart centered at (0, 0)
 function drawHeart(ctx: CanvasRenderingContext2D, size: number) {
   const s = size / 20;
@@ -33,6 +55,16 @@ function drawHeart(ctx: CanvasRenderingContext2D, size: number) {
   ctx.bezierCurveTo(-15 * s, 10 * s, -5 * s, 16 * s, 0, 20 * s);
   ctx.bezierCurveTo(5 * s, 16 * s, 15 * s, 10 * s, 15 * s, 1 * s);
   ctx.bezierCurveTo(15 * s, -9 * s, 5 * s, -14 * s, 0, -5 * s);
+  ctx.closePath();
+}
+
+// Helper to draw a delicate rose petal
+function drawPetal(ctx: CanvasRenderingContext2D, size: number) {
+  const s = size / 20;
+  ctx.beginPath();
+  ctx.moveTo(0, -12 * s);
+  ctx.bezierCurveTo(9 * s, -9 * s, 11 * s, 6 * s, 0, 14 * s);
+  ctx.bezierCurveTo(-11 * s, 6 * s, -9 * s, -9 * s, 0, -12 * s);
   ctx.closePath();
 }
 
@@ -55,6 +87,8 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const particlesRef = useRef<HeartParticle[]>([]);
     const ambientRef = useRef<AmbientParticle[]>([]);
+    const whispersRef = useRef<FloatingWhisper[]>([]);
+    const pulseWavesRef = useRef<PulseWave[]>([]);
     const animFrameRef = useRef<number | null>(null);
     const idCounterRef = useRef<number>(0);
     const dimsRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
@@ -62,7 +96,7 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
     // Initialize ambient romantic floating motes
     const initAmbient = (width: number, height: number) => {
       const ambients: AmbientParticle[] = [];
-      const count = Math.min(60, Math.floor((width * height) / 18000));
+      const count = Math.min(65, Math.floor((width * height) / 16000));
       for (let i = 0; i < count; i++) {
         ambients.push({
           x: Math.random() * width,
@@ -80,6 +114,10 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
 
     const addParticle = (p: Partial<HeartParticle>) => {
       idCounterRef.current += 1;
+      const typeChoice: HeartParticle['type'] = p.type ?? (
+        Math.random() < 0.55 ? 'heart' : Math.random() < 0.85 ? 'petal' : 'sparkle'
+      );
+
       const particle: HeartParticle = {
         id: idCounterRef.current,
         x: p.x ?? dimsRef.current.w / 2,
@@ -94,20 +132,64 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
         wobbleSpeed: p.wobbleSpeed ?? Math.random() * 0.05 + 0.02,
         wobbleOffset: Math.random() * Math.PI * 2,
         life: 0,
-        maxLife: p.maxLife ?? Math.random() * 180 + 160,
+        maxLife: p.maxLife ?? Math.random() * 190 + 160,
         scaleX: 1,
         scaleY: 1,
-        type: p.type ?? (Math.random() > 0.18 ? 'heart' : 'sparkle'),
+        type: typeChoice,
       };
       particlesRef.current.push(particle);
     };
 
+    const spawnWhisper = (text?: string, x?: number, y?: number) => {
+      idCounterRef.current += 1;
+      const chosenText = text || ROMANTIC_WHISPERS[Math.floor(Math.random() * ROMANTIC_WHISPERS.length)];
+      const targetX = x ?? (dimsRef.current.w * 0.2 + Math.random() * dimsRef.current.w * 0.6);
+      const targetY = y ?? (dimsRef.current.h * 0.4 + Math.random() * dimsRef.current.h * 0.3);
+
+      whispersRef.current.push({
+        id: idCounterRef.current,
+        text: chosenText,
+        x: targetX,
+        y: targetY,
+        opacity: 1,
+        vy: -0.65 - Math.random() * 0.4,
+        life: 0,
+        maxLife: 150,
+      });
+    };
+
+    const triggerHeartbeatPulse = (x?: number, y?: number) => {
+      const targetX = x ?? dimsRef.current.w / 2;
+      const targetY = y ?? dimsRef.current.h / 2;
+
+      pulseWavesRef.current.push({
+        x: targetX,
+        y: targetY,
+        radius: 10,
+        maxRadius: Math.min(dimsRef.current.w, dimsRef.current.h) * 0.65,
+        opacity: 0.9,
+        color: '#ff2a6d',
+      });
+
+      pulseWavesRef.current.push({
+        x: targetX,
+        y: targetY,
+        radius: 5,
+        maxRadius: Math.min(dimsRef.current.w, dimsRef.current.h) * 0.45,
+        opacity: 0.7,
+        color: '#ffd166',
+      });
+    };
+
     // Burst from specific location (e.g. tap)
     const burstFrom = (x: number, y: number, count = 80) => {
+      triggerHeartbeatPulse(x, y);
+      spawnWhisper(undefined, x, y - 20);
+
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = Math.random() * 14 + 3;
-        const isBig = Math.random() > 0.85;
+        const isBig = Math.random() > 0.82;
         const size = isBig ? Math.random() * 24 + 26 : Math.random() * 18 + 12;
 
         addParticle({
@@ -116,8 +198,7 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed - (Math.random() * 4 + 2), // upward bias
           size,
-          maxLife: Math.random() * 160 + 120,
-          type: Math.random() > 0.15 ? 'heart' : 'sparkle',
+          maxLife: Math.random() * 170 + 130,
         });
       }
     };
@@ -127,7 +208,10 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
       const { w, h } = dimsRef.current;
       if (w === 0 || h === 0) return;
 
-      // 1. Bottom fountains shooting up (majestic firework fountains of hearts)
+      triggerHeartbeatPulse(w / 2, h / 2);
+      spawnWhisper('Come soon, okay? ✨', w / 2, h * 0.45);
+
+      // 1. Bottom fountains shooting up (majestic firework fountains of hearts & petals)
       const bottomCount = Math.floor(count * 0.35);
       for (let i = 0; i < bottomCount; i++) {
         const startX = Math.random() * w;
@@ -139,12 +223,11 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           size: Math.random() * 24 + 14,
-          maxLife: Math.random() * 220 + 150,
-          type: 'heart',
+          maxLife: Math.random() * 230 + 160,
         });
       }
 
-      // 2. Top shower cascading gently down like romantic rain
+      // 2. Top shower cascading gently down like romantic rain of petals and hearts
       const topCount = Math.floor(count * 0.25);
       for (let i = 0; i < topCount; i++) {
         const startX = Math.random() * w;
@@ -154,8 +237,7 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
           vx: (Math.random() - 0.5) * 4,
           vy: Math.random() * 4 + 2.5,
           size: Math.random() * 26 + 12,
-          maxLife: Math.random() * 260 + 180,
-          type: Math.random() > 0.2 ? 'heart' : 'sparkle',
+          maxLife: Math.random() * 270 + 190,
         });
       }
 
@@ -171,8 +253,7 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           size: Math.random() * 22 + 12,
-          maxLife: Math.random() * 200 + 140,
-          type: 'heart',
+          maxLife: Math.random() * 210 + 150,
         });
       }
 
@@ -188,8 +269,7 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           size: Math.random() * 22 + 12,
-          maxLife: Math.random() * 200 + 140,
-          type: 'heart',
+          maxLife: Math.random() * 210 + 150,
         });
       }
 
@@ -200,11 +280,15 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
 
     const clear = () => {
       particlesRef.current = [];
+      whispersRef.current = [];
+      pulseWavesRef.current = [];
     };
 
     useImperativeHandle(ref, () => ({
       burstFrom,
       showerFromEverywhere,
+      spawnWhisper,
+      triggerHeartbeatPulse,
       clear,
     }));
 
@@ -265,23 +349,47 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
           ctx.restore();
         }
 
-        // Periodically spawn gentle ambient drifting hearts in background
+        // 2. Render expanding Heartbeat pulse rings
+        const waves = pulseWavesRef.current;
+        for (let i = waves.length - 1; i >= 0; i--) {
+          const wave = waves[i];
+          wave.radius += 4;
+          const progress = wave.radius / wave.maxRadius;
+          wave.opacity = Math.max(0, (1 - progress) * 0.85);
+
+          if (progress >= 1 || wave.opacity <= 0.01) {
+            waves.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
+          ctx.strokeStyle = wave.color;
+          ctx.lineWidth = 2.5;
+          ctx.globalAlpha = wave.opacity;
+          ctx.shadowColor = wave.color;
+          ctx.shadowBlur = 15;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Periodically spawn gentle ambient drifting hearts/petals in background
         ambientHeartTimer += dt;
-        if (ambientHeartTimer > 0.4 && particlesRef.current.length < 350) {
+        if (ambientHeartTimer > 0.45 && particlesRef.current.length < 320) {
           ambientHeartTimer = 0;
           addParticle({
             x: Math.random() * w,
             y: h + 20,
             vx: (Math.random() - 0.5) * 1.5,
             vy: -Math.random() * 1.8 - 0.8,
-            size: Math.random() * 14 + 10,
-            opacity: Math.random() * 0.4 + 0.3,
+            size: Math.random() * 16 + 10,
+            opacity: Math.random() * 0.45 + 0.3,
             maxLife: Math.random() * 300 + 200,
-            type: 'heart',
           });
         }
 
-        // 2. Render and update active heart particles
+        // 3. Render and update active heart & petal particles
         const particles = particlesRef.current;
         for (let i = particles.length - 1; i >= 0; i--) {
           const p = particles[i];
@@ -294,12 +402,12 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
 
           // Physics: drag, gravity, and gentle sinusoidal flutter
           p.vx *= 0.985;
-          p.vy += 0.08; // subtle gravity
-          p.x += p.vx + Math.sin(p.life * p.wobbleSpeed + p.wobbleOffset) * 0.75;
+          p.vy += p.type === 'petal' ? 0.04 : 0.08; // petals drift softer
+          p.x += p.vx + Math.sin(p.life * p.wobbleSpeed + p.wobbleOffset) * (p.type === 'petal' ? 1.4 : 0.75);
           p.y += p.vy;
           p.rotation += p.vRot;
 
-          // 3D paper flutter simulation
+          // 3D paper / petal flutter simulation
           p.scaleX = Math.cos(p.life * p.wobbleSpeed * 1.5 + p.wobbleOffset);
 
           // Fade out near end of life
@@ -323,11 +431,45 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
           if (p.type === 'heart') {
             drawHeart(ctx, p.size);
             ctx.fill();
+          } else if (p.type === 'petal') {
+            drawPetal(ctx, p.size);
+            ctx.fill();
           } else {
             drawSparkle(ctx, p.size * 0.8);
             ctx.fill();
           }
 
+          ctx.restore();
+        }
+
+        // 4. Render Floating Whispers
+        const whispers = whispersRef.current;
+        for (let i = whispers.length - 1; i >= 0; i--) {
+          const wh = whispers[i];
+          wh.life += 1;
+          wh.y += wh.vy;
+
+          const progress = wh.life / wh.maxLife;
+          const alpha = progress < 0.2
+            ? progress / 0.2
+            : progress > 0.7
+            ? (1 - progress) / 0.3
+            : 1;
+
+          if (progress >= 1) {
+            whispers.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.font = 'italic 500 16px "Playfair Display", Georgia, serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#ffe5ec';
+          ctx.shadowColor = '#ff2a6d';
+          ctx.shadowBlur = 10;
+          ctx.globalAlpha = Math.max(0, alpha * 0.95);
+          ctx.fillText(wh.text, wh.x, wh.y);
           ctx.restore();
         }
 
@@ -350,7 +492,7 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
       const rect = e.currentTarget.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      burstFrom(x, y, 40);
+      burstFrom(x, y, 45);
     };
 
     return (
@@ -365,3 +507,4 @@ export const HeartCanvas = forwardRef<HeartCanvasHandle, HeartCanvasProps>(
 );
 
 HeartCanvas.displayName = 'HeartCanvas';
+

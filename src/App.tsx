@@ -51,6 +51,12 @@ export default function App() {
     canvasRef.current?.showerFromEverywhere(260);
   }, []);
 
+  const handleSendHeartbeat = useCallback(() => {
+    canvasRef.current?.triggerHeartbeatPulse(window.innerWidth / 2, window.innerHeight / 2);
+    canvasRef.current?.spawnWhisper('Come soon, Vaishu ✨', window.innerWidth / 2, window.innerHeight * 0.4);
+    canvasRef.current?.burstFrom(window.innerWidth / 2, window.innerHeight * 0.55, 45);
+  }, []);
+
   const handleReset = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     canvasRef.current?.clear();
@@ -106,6 +112,7 @@ export default function App() {
             <RomanticMessageCard
               onShowerAgain={handleShowerAgain}
               onReset={handleReset}
+              onSendHeartbeat={handleSendHeartbeat}
               isMuted={isMuted}
               onToggleMute={handleToggleMute}
             />

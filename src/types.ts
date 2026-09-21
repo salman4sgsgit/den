@@ -30,3 +30,14 @@ export interface AmbientParticle {
   sinOffset: number;
   color: string;
 }
+
+export interface FloatingWhisper {
+  id: number;
+  text: string;
+  x: number;
+  y: number;
+  opacity: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+}

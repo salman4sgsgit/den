@@ -19,20 +19,38 @@ class RomanticAudio {
     }
   }
 
-  public playHeartbeat() {
+  public playHeartbeat(fast = false) {
     if (this.isMuted) return;
     try {
       this.initContext();
       if (!this.ctx) return;
 
       const now = this.ctx.currentTime;
+      const interval = fast ? 0.12 : 0.18;
       
       // Lub sound (low pitch sine with rapid decay)
-      this.triggerThud(now, 70, 42, 0.18, 0.4);
-      // Dub sound (slightly higher and punchier after 180ms)
-      this.triggerThud(now + 0.18, 85, 46, 0.22, 0.35);
+      this.triggerThud(now, 72, 40, 0.18, 0.45);
+      // Dub sound (slightly higher and punchier)
+      this.triggerThud(now + interval, 88, 44, 0.22, 0.4);
     } catch {
       // Audio might be blocked until user gesture
+    }
+  }
+
+  public playComingSoonMelody() {
+    if (this.isMuted) return;
+    try {
+      this.initContext();
+      if (!this.ctx) return;
+
+      const now = this.ctx.currentTime;
+      // An emotional ascending music-box arpeggio (C5, E5, G5, B5, C6, E6)
+      const notes = [523.25, 659.25, 783.99, 987.77, 1046.5, 1318.51];
+      notes.forEach((freq, idx) => {
+        this.playChimeNote(freq, now + idx * 0.14, 1.2, 0.15);
+      });
+    } catch {
+      // Audio error handling
     }
   }
 

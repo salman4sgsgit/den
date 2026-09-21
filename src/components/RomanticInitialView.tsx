@@ -24,7 +24,7 @@ export const RomanticInitialView: React.FC<RomanticInitialViewProps> = ({ onTap 
         className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-rose-400/20 bg-rose-950/40 backdrop-blur-md mb-8 text-rose-200/90 text-xs sm:text-sm font-medium tracking-wide shadow-lg shadow-rose-950/50"
       >
         <Sparkles className="w-3.5 h-3.5 text-rose-300 animate-spin" style={{ animationDuration: '6s' }} />
-        <span>For Someone Truly Special</span>
+        <span>A Secret Just For You 🌸</span>
       </motion.div>
 
       {/* Main Interactive Pulsing Heart Container */}
@@ -35,8 +35,8 @@ export const RomanticInitialView: React.FC<RomanticInitialViewProps> = ({ onTap 
         className="relative group flex items-center justify-center mb-8"
       >
         {/* Pulsing Ripple rings */}
-        <div className="absolute w-44 h-44 sm:w-56 sm:h-56 rounded-full border border-rose-500/25 animate-ping" style={{ animationDuration: '3s' }} />
-        <div className="absolute w-36 h-36 sm:w-48 sm:h-48 rounded-full bg-gradient-to-tr from-rose-600/30 to-pink-500/20 blur-xl animate-pulse-heart" />
+        <div className="absolute w-48 h-48 sm:w-60 sm:h-60 rounded-full border border-rose-500/25 animate-ping" style={{ animationDuration: '3s' }} />
+        <div className="absolute w-36 h-36 sm:w-48 sm:h-48 rounded-full bg-gradient-to-tr from-rose-600/30 via-pink-500/25 to-amber-500/15 blur-xl animate-pulse-heart" />
 
         {/* Heart Seal Button */}
         <div
@@ -55,10 +55,10 @@ export const RomanticInitialView: React.FC<RomanticInitialViewProps> = ({ onTap 
         className="max-w-md mx-auto"
       >
         <h1 className="font-serif-romantic text-3xl sm:text-4xl md:text-5xl text-rose-50 font-normal tracking-tight mb-3">
-          Touch To Open
+          Touch To Begin
         </h1>
-        <p className="text-rose-200/70 text-sm sm:text-base font-light tracking-wide">
-          Tap anywhere on the screen to unlock a heart shower surprise
+        <p className="text-rose-200/75 text-sm sm:text-base font-light tracking-wide">
+          Tap anywhere to unlock the heart shower waiting for you
         </p>
       </motion.div>
 
@@ -70,7 +70,7 @@ export const RomanticInitialView: React.FC<RomanticInitialViewProps> = ({ onTap 
         className="mt-10 flex items-center gap-2 text-xs uppercase tracking-widest text-rose-400/60"
       >
         <span className="w-8 h-[1px] bg-rose-400/30" />
-        <span>Single Tap Experience</span>
+        <span>Single Tap • Sound Recommended</span>
         <span className="w-8 h-[1px] bg-rose-400/30" />
       </motion.div>
     </div>
